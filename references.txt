@@ -1,0 +1,20 @@
+https://docs.google.com/document/d/1k8GusDAk-dLO8heNG-d4YJkmx8Z8vVMsIfS1R6QeMUE/edit
+
+Examples of how to liquidate Compound using AAVE flash loans:
+https://gist.github.com/cryptofish7/f28165dea68c8aa2848926f2c027559d
+https://gist.github.com/cryptofish7/dce64a23ada8609355456c7f959ec19f
+https://gist.github.com/cryptofish7/c9dd14a323e555861fcf886e3162ecf9
+https://gist.github.com/cryptofish7/05d5d1a5adc1703642305acad0dff73f
+
+CREAM flash loan docs:
+https://docs.cream.finance/flash-loans-1/flash-loans-eip-3156
+
+Building a liquidation bot for Compound:
+https://github.com/azizjalel/Compound-Watcher/blob/master/files/modules.py
+https://blog.baowebdev.com/2019/11/how-to-build-a-compound-liquidation-bot/
+
+http://www.personal.reading.ac.uk/~sis01xh/teaching/CS2EA16/Le8a.pdf
+
+https://thegraph.com/hosted-service/subgraph/traderjoe-xyz/lending?query=underwater%20accounts 
+
+https://wahlnetwork.com/2020/08/04/how-to-query-graphql-apis-with-python/
