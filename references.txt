@@ -18,3 +18,7 @@ http://www.personal.reading.ac.uk/~sis01xh/teaching/CS2EA16/Le8a.pdf
 https://thegraph.com/hosted-service/subgraph/traderjoe-xyz/lending?query=underwater%20accounts 
 
 https://wahlnetwork.com/2020/08/04/how-to-query-graphql-apis-with-python/
+
+https://thegraph.com/hosted-service/subgraph/traderjoe-xyz/lending?query=Example%20query
+
+https://docs.traderjoexyz.com/main/security-and-contracts/contracts
