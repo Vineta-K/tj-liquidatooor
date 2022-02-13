@@ -1,4 +1,4 @@
-jToken_adresses = {
+jToken_addresses = {
 "jAVAX": "0xC22F01ddc8010Ee05574028528614634684EC29e",
 "jWETH": "0x929f5caB61DFEc79a5431a7734a68D714C4633fa",
 "jWBTC": "0x3fE38b7b610C0ACD10296fEf69d9b18eB7a9eB1F",
@@ -9,6 +9,19 @@ jToken_adresses = {
 "jMIM":"0xcE095A9657A02025081E0607c8D8b081c76A75ea",
 "jXJOE": "0xC146783a59807154F92084f9243eb139D58Da696",
 "jUSDCNative": "0x29472D511808Ce925F501D25F9Ee9efFd2328db2",
+}
+
+underlying_decimals = {
+  "jAVAX": 18,
+"jWETH": 18,
+"jWBTC": 8,
+"jUSDC": 6,
+"jUSDT": 6,
+"jDAI": 18,
+"jLINK": 18,
+"jMIM": 18,
+"jXJOE": 18,
+"jUSDCNative": 6, 
 }
 
 JoeTroller = "0xdc13687554205E5b89Ac783db14bb5bba4A1eDaC"
