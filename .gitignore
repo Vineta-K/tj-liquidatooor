@@ -6,3 +6,4 @@ build/
 reports/
 secrets.py
 0x*
+node_modules
