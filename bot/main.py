@@ -5,12 +5,12 @@ import json
 from constants import (
 graphql_uri,
 snowtrace_api,
-RPC_endpoint,
-PriceOracle,
+rpc_endpoint,
+PriceOracle_address,
 jToken_addresses,
 underlying_decimals)
 
-from secrets import snowtrace_API_token
+from secrets import snowtrace_api_token
 
 close_factor = 0.5 # get from contract at some point
 #also need to look at liquidation incentive factor here
@@ -38,18 +38,17 @@ def max_repayable_borrow(acc_positions,price_oracle):
     underlying_value_USD = underlying_price_decimals * float(jToken['borrowBalanceUnderlying'])
     if underlying_value_USD > max_repayable['amount_USD']:
       max_repayable = {
-        "amount_underlying":jToken["borrowBalanceUnderlying"],
-        "amount_USD":underlying_value_USD,
+        "amount_underlying": 0.5 * float(jToken["borrowBalanceUnderlying"]),
+        "amount_USD":0.5 * underlying_value_USD,
         "jToken":jToken_addresses[symbol],
         "symbol":symbol
         }
-  print("repayable:" + str(max_repayable))
   return max_repayable
 
     
 
 def find_seizable_position(acc_positions,max_repay,price_oracle):
-  seizable = {
+  seizeable = {
     "amount_underlying":0,
     "amount_USD":0,
     "jToken":None,
@@ -60,15 +59,14 @@ def find_seizable_position(acc_positions,max_repay,price_oracle):
       underlying_price = price_oracle.caller().getUnderlyingPrice(jToken_addresses[symbol])
       underlying_price_decimals = underlying_price/(1e18*10**(18-underlying_decimals[symbol]))
       underlying_value_USD = underlying_price_decimals * float(jToken['supplyBalanceUnderlying'])
-      if underlying_value_USD > 0.5 * max_repay["amount_USD"]:
-        seizable = {
+      if underlying_value_USD > max_repay["amount_USD"]:
+        seizeable = {
           "amount_underlying":jToken["supplyBalanceUnderlying"],
           "amount_USD":underlying_value_USD,
           "jToken":jToken_addresses[symbol],
           "symbol":symbol
         }
-  print("seizable:" + str(seizable))
-  return seizable
+  return seizeable
 
 def run_query(uri, query, statusCode=200, headers=None):
     request = requests.post(uri, json={'query': query}, headers=headers)
@@ -79,7 +77,7 @@ def run_query(uri, query, statusCode=200, headers=None):
 
 if __name__ == "__main__":
 
-  w3 = Web3(Web3.HTTPProvider(RPC_endpoint))
+  w3 = Web3(Web3.HTTPProvider(rpc_endpoint))
   if (w3.isConnected()):
     print ("Successfully connected to w3")
   else:
@@ -88,15 +86,15 @@ if __name__ == "__main__":
   params = {
     'module':'contract',
     'action':'getabi',
-    'address': PriceOracle,
-    'apikey': snowtrace_API_token
+    'address': PriceOracle_address,
+    'apikey': snowtrace_api_token
   }
 
-  PriceOracleABI = requests.get(snowtrace_api,params).json()['result']
+  PriceOracle_abi = requests.get(snowtrace_api,params).json()['result']
 
-  price_oracle = w3.eth.contract(address=PriceOracle,abi=PriceOracleABI)
+  price_oracle = w3.eth.contract(address=PriceOracle_address,abi=PriceOracle_abi)
   for symbol in jToken_addresses:
-    underlying_price_test = price_oracle.caller().getUnderlyingPrice(jToken_addresses[symbol])
+    underlying_price_test = price_oracle.functions.getUnderlyingPrice(jToken_addresses[symbol]).call()
     print(symbol + ": " + str(underlying_price_test/(1e18*10**(18-underlying_decimals[symbol]))))
 
 
@@ -123,8 +121,11 @@ if __name__ == "__main__":
 
   #maybe calculate price out here and pass in to cut down on contract calls
 
-    borrow = max_repayable_borrow(acc_positions,price_oracle)
-    seizeable = find_seizable_position(acc_positions,borrow,price_oracle)
+    max_repayable = max_repayable_borrow(acc_positions,price_oracle)
+    seizeable = find_seizable_position(acc_positions,max_repayable,price_oracle)
+
+    print("repayable:" + str(max_repayable))
+    print("seizable:" + str(seizeable))
 
     #liquidate account()!!
 
