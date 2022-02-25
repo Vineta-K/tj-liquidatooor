@@ -22,3 +22,7 @@ https://wahlnetwork.com/2020/08/04/how-to-query-graphql-apis-with-python/
 https://thegraph.com/hosted-service/subgraph/traderjoe-xyz/lending?query=Example%20query
 
 https://docs.traderjoexyz.com/main/security-and-contracts/contracts
+
+Brownie with hardhat for testing 
+https://github.com/eth-brownie/brownie/blob/master/docs/install.rst
+https://github.com/trash89/brownie_with_hardhat
