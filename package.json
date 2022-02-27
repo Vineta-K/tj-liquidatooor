@@ -262,10 +262,6 @@
   "scripts": {
     "test": "mocha"
   },
-  "repository": {
-    "type": "git",
-    "url": "git+https://Vineta-K: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@github.com/Vineta-K/tj-liquidatooor.git"
-  },
   "keywords": [],
   "author": "",
   "license": "ISC",
