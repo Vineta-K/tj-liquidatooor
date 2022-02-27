@@ -10,6 +10,8 @@ interface Joetroller {
 
 interface ERC20 {
     function approve(address spender, uint256 amount) external;
+    function symbol() external view returns (string memory);
+    function decimals() external view returns (uint8);
 }
 
 
@@ -20,14 +22,13 @@ contract Liquidatooor is ERC3156FlashBorrowerInterface{
         joetroller = _joetroller;
     }
 
-    function doFlashloan(
-        address flashloanLender,
+    function doFlashLoan(
+        address flashLoanLender,
         address borrowToken,
         uint256 borrowAmount
     ) external {
         bytes memory data = abi.encode(borrowToken, borrowAmount);
-        console.log(address(this));
-        ERC3156FlashLenderInterface(flashloanLender).flashLoan(this, borrowToken, borrowAmount, data);
+        ERC3156FlashLenderInterface(flashLoanLender).flashLoan(this, address(this), borrowAmount, data); //initiator address used as second argument for TJ flash loans
     }
 
     function onFlashLoan(
@@ -37,8 +38,12 @@ contract Liquidatooor is ERC3156FlashBorrowerInterface{
         uint256 fee,
         bytes calldata data
     ) override external returns(bytes32){
+        console.log("initiator: ",initiator);
+        console.log("this: ",address(this));
+        console.log("msg.sender: ",msg.sender);
+        console.log("token: ", token);
+
         require(Joetroller(joetroller).isMarketListed(msg.sender), "untrusted message sender");
-        console.log(initiator);
         require(initiator == address(this), "FlashBorrower: Untrusted loan initiator");
         (address borrowToken, uint256 borrowAmount) = abi.decode(data, (address, uint256));
         require(borrowToken == token, "encoded data (borrowToken) does not match");
@@ -46,9 +51,7 @@ contract Liquidatooor is ERC3156FlashBorrowerInterface{
         ERC20(token).approve(msg.sender, amount + fee);
         // your logic is written here...
 
-        console.log(amount);
-
-
+        console.log("borrowed ",amount , ERC20(token).symbol());
 
         return keccak256("ERC3156FlashBorrowerInterface.onFlashLoan");
     }
