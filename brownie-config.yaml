@@ -1,8 +1,7 @@
 dotenv: .env
+
 wallets:
   from_key: ${PRIVATE_KEY}
 
 networks:
-  default: avalanche-fork
-  avalanche-fork:
-    hardfork: london
+  default: hardhat-local

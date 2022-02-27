@@ -2,6 +2,7 @@ pragma solidity 0.8.12;
 
 import "./ERC3156FlashLenderInterface.sol";
 import "./ERC3156FlashBorrowerInterface.sol";
+import "../node_modules/hardhat/console.sol";
 
 interface Joetroller {
     function isMarketListed(address jTokenAddress) external view returns (bool);
@@ -25,6 +26,7 @@ contract Liquidatooor is ERC3156FlashBorrowerInterface{
         uint256 borrowAmount
     ) external {
         bytes memory data = abi.encode(borrowToken, borrowAmount);
+        console.log(address(this));
         ERC3156FlashLenderInterface(flashloanLender).flashLoan(this, borrowToken, borrowAmount, data);
     }
 
@@ -36,6 +38,7 @@ contract Liquidatooor is ERC3156FlashBorrowerInterface{
         bytes calldata data
     ) override external returns(bytes32){
         require(Joetroller(joetroller).isMarketListed(msg.sender), "untrusted message sender");
+        console.log(initiator);
         require(initiator == address(this), "FlashBorrower: Untrusted loan initiator");
         (address borrowToken, uint256 borrowAmount) = abi.decode(data, (address, uint256));
         require(borrowToken == token, "encoded data (borrowToken) does not match");
@@ -43,7 +46,7 @@ contract Liquidatooor is ERC3156FlashBorrowerInterface{
         ERC20(token).approve(msg.sender, amount + fee);
         // your logic is written here...
 
-        
+        console.log(amount);
 
 
 
