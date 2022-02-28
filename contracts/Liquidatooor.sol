@@ -1,7 +1,8 @@
 pragma solidity 0.8.12;
 
-import "./ERC3156FlashLenderInterface.sol";
-import "./ERC3156FlashBorrowerInterface.sol";
+import "../interfaces/ERC3156FlashLenderInterface.sol";
+import "../interfaces/ERC3156FlashBorrowerInterface.sol";
+import "../interfaces/IJoeRouter02.sol";
 import "../node_modules/hardhat/console.sol";
 
 interface Joetroller {
@@ -28,7 +29,7 @@ contract Liquidatooor is ERC3156FlashBorrowerInterface{
         uint256 borrowAmount,
         address repayToken,
         address accountToLiquidate,
-        address collateralToken,
+        address collateralToken
     ) external {
         bytes memory data = abi.encode(borrowToken, borrowAmount, repayToken, accountToLiquidate, collateralToken);
         ERC3156FlashLenderInterface(flashLoanLender).flashLoan(this, address(this), borrowAmount, data); //initiator address used as second argument for TJ flash loans
@@ -48,14 +49,18 @@ contract Liquidatooor is ERC3156FlashBorrowerInterface{
 
         require(Joetroller(joetroller).isMarketListed(msg.sender), "untrusted message sender");
         require(initiator == address(this), "FlashBorrower: Untrusted loan initiator");
-        (address borrowToken, uint256 borrowAmount, address repayToken, address accountToLiquidate, address collateralToken) = abi.decode(data, (address, uint256));
+        (address borrowToken, uint256 borrowAmount, address repayToken, address accountToLiquidate, address collateralToken) = 
+            abi.decode(data, (address, uint256, address, address, address));
         require(borrowToken == token, "encoded data (borrowToken) does not match");
         require(borrowAmount == amount, "encoded data (borrowAmount) does not match");
         ERC20(token).approve(msg.sender, amount + fee);
         // your logic is written here...
 
         console.log("borrowed ",amount , ERC20(token).symbol());
-        console.log("to liquidate",accountToLiquidate," using ", ERC20(repayToken).symbol(), " seizing ", ERC20(collateralToken).symbol()) 
+
+        console.log("to liquidate",accountToLiquidate); 
+        console.log("using ", ERC20(repayToken).symbol());
+        console.log("seizing ", ERC20(collateralToken).symbol());
 
         return keccak256("ERC3156FlashBorrowerInterface.onFlashLoan");
     }
