@@ -5,3 +5,7 @@ wallets:
 
 networks:
   default: hardhat-local
+
+compiler:
+  solc:
+    version: null

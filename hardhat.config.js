@@ -7,6 +7,7 @@ module.exports = {
       initialBaseFeePerGas: 0,
       forking: {
           url: "https://api.avax.network/ext/bc/C/rpc",
+          blockNumber: 11319146 ,
           enabled: true,},
       },
   },

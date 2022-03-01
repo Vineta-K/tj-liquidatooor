@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: MIT
-pragma solidity >=0.8.0;
+pragma solidity >=0.4.22;
 import "./ERC3156FlashBorrowerInterface.sol";
 
 interface ERC3156FlashLenderInterface {

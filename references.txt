@@ -26,3 +26,7 @@ https://docs.traderjoexyz.com/main/security-and-contracts/contracts
 Brownie with hardhat for testing 
 https://github.com/eth-brownie/brownie/blob/master/docs/install.rst
 https://github.com/trash89/brownie_with_hardhat
+
+Liquidations on chain for testing with??
+https://snowtrace.io/tx/0xb10f10f8598400197c8709867bca959251e98662332d962ce4948d7997bb6984
+https://snowtrace.io/tx/0xf05150d2562dd02800ec3f7ee1bf10d157f9d768151ae28da976d5b7e4da70bc
