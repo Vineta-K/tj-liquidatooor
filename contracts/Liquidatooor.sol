@@ -3,6 +3,9 @@ pragma solidity ^0.8.12;
 import "../interfaces/ERC3156FlashLenderInterface.sol";
 import "../interfaces/ERC3156FlashBorrowerInterface.sol";
 import "../interfaces/IJoeRouter02.sol";
+import "../interfaces/IERC20.sol";
+import "../interfaces/IJToken.sol";
+import "../interfaces/Joetroller.sol";
 import "../node_modules/hardhat/console.sol";
 
 interface Joetroller {
@@ -66,10 +69,10 @@ contract Liquidatooor is ERC3156FlashBorrowerInterface{
         uint256 fee,
         bytes calldata data
     ) external returns(bytes32){
-        console.log("initiator: ",initiator);
-        console.log("this: ",address(this));
-        console.log("msg.sender: ",msg.sender);
-        console.log("token: ", token);
+        //console.log("initiator: ",initiator);
+        //console.log("this: ",address(this));
+        //console.log("msg.sender: ",msg.sender);
+        //console.log("token: ", token);
 
         require(Joetroller(joetroller).isMarketListed(msg.sender), "untrusted message sender");
         require(initiator == address(this), "FlashBorrower: Untrusted loan initiator");
@@ -84,7 +87,7 @@ contract Liquidatooor is ERC3156FlashBorrowerInterface{
         // your logic is written here...
 
         console.log("borrowed ",IERC20(token).balanceOf(address(this)) , IERC20(token).symbol());
-        console.log("borrowed ",amount , IERC20(token).symbol());
+        //console.log("borrowed ",amount , IERC20(token).symbol());
 
         console.log("to liquidate",accountToLiquidate); 
         console.log("using ", IERC20(repayTokenUnderlying).symbol());
@@ -96,10 +99,10 @@ contract Liquidatooor is ERC3156FlashBorrowerInterface{
 
         uint256[] memory amounts = IJoeRouter02(joeRouter).swapTokensForExactTokens(repayAmount,amount,path,address(this),block.timestamp+15);
         //add some checks here on amounts
-        console.log("after swap ", IERC20(repayTokenUnderlying).balanceOf(address(this)),IERC20(repayTokenUnderlying).symbol());
+        console.log("after swap ", IERC20(IJToken(repayJToken).underlying()).balanceOf(address(this)),IERC20(repayTokenUnderlying).symbol());
 
         for (uint i = 0; i< amounts.length; i++){
-            console.log(amounts[i]);
+        //    console.log(amounts[i]);
         }
 
         uint256 returnCode_liq = IJToken(repayJToken).liquidateBorrow(accountToLiquidate,repayAmount,collateralJToken);
