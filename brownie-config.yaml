@@ -8,7 +8,6 @@ networks:
   live:
     gas_limit: max
     reverting_tx_gas_limit: False
-    explorer: https://api.snowtrace.io/api
 
 compiler:
   solc:

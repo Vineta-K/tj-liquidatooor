@@ -2,6 +2,9 @@ from brownie import chain,web3
 
 import functools
 
+# class Revert(Exception):
+#     pass
+
 def trace_on_revert(func):
     @functools.wraps(func)
     def wrapper(*args,**kwargs):
@@ -14,7 +17,7 @@ def trace_on_revert(func):
                 full_transactions = False)
             tx = web3.toHex(block['transactions'][0])
             chain.get_transaction(tx).call_trace(True)
-            return e
+            return (e)
     return wrapper        
 
 

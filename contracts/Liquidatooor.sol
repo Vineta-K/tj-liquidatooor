@@ -8,26 +8,6 @@ import "../interfaces/IJToken.sol";
 import "../interfaces/Joetroller.sol";
 import "../node_modules/hardhat/console.sol";
 
-interface Joetroller {
-    function isMarketListed(address jTokenAddress) external view returns (bool);
-}
-
-interface IERC20 {
-    function approve(address spender, uint256 amount) external;
-    function symbol() external view returns (string memory);
-    function decimals() external view returns (uint8);
-    function balanceOf(address account) external view returns (uint);
-}
-
-interface IJToken {
-    function liquidateBorrow(
-        address borrower,
-        uint256 repayAmount,
-        address JTokenCollateral
-    ) external returns (uint256);
-    function underlying() external view returns (address);
-}
-
 contract Liquidatooor is ERC3156FlashBorrowerInterface{
 
     address public joetroller;

@@ -1,4 +1,3 @@
-
 from brownie import (
     accounts)
 
@@ -25,6 +24,7 @@ def liquidator():
 def test_flash(liquidator):
     result = flashloan(liquidator)
     print(result)
+    assert not isinstance(result,Exception) 
 
 @trace_on_revert
 def flashloan(liquidator):
