@@ -7,11 +7,11 @@ from scripts.constants import jToken_addresses,contract_addresses
 import pytest
 
 #hardcoded for testing for now -> need to loop through???
-lender_address = jToken_addresses["jAVAX"]
-borrow_token = "0xB31f66AA3C1e785363F0875A1B74E27b85FD66c7" #wAVAX
-repayAmount = int(1949929905)
+lender_address = jToken_addresses["jWETH"]
+borrow_token = "0x49D5c2BdFfac6CE2BFdB6640F4F80f226bc10bAB"
+repayAmount = int(34710)
 repayJToken = jToken_addresses["jUSDC"]
-accountToLiquidate = "0xb9aec4db7082b0519074d84c6bbd854403d6b968"
+accountToLiquidate = "0xa3167c4ba7e6b61cbfa10f1ae0a93bb3f3c00957"
 collateralJToken = jToken_addresses["jAVAX"]
 
 #jAVAX = Contract("0xC22F01ddc8010Ee05574028528614634684EC29e")

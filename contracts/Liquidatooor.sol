@@ -33,13 +33,15 @@ contract Liquidatooor is ERC3156FlashBorrowerInterface{
         address[] memory path = new address[](2);
         path[0] = borrowToken;
         path[1] = repayTokenUnderlying;
+
         uint256[] memory borrowAmount = IJoeRouter02(joeRouter).getAmountsIn(repayAmount,path);
 
-        console.log("need",borrowAmount[0],IERC20(borrowToken).symbol());
+        //console.log("need",borrowAmount[0],IERC20(borrowToken).symbol());
         console.log("for",repayAmount, IERC20(repayTokenUnderlying).symbol());
         
         bytes memory data = abi.encode(repayAmount, repayJToken, accountToLiquidate, collateralJToken);
         ERC3156FlashLenderInterface(flashLoanLender).flashLoan(this, address(this), borrowAmount[0], data); //initiator address used as second argument for TJ flash loans
+        console.log("remaining_balance",IERC20(borrowToken).balanceOf(address(this)));
     }
 
     function onFlashLoan(
@@ -57,16 +59,20 @@ contract Liquidatooor is ERC3156FlashBorrowerInterface{
         require(Joetroller(joetroller).isMarketListed(msg.sender), "untrusted message sender");
         require(initiator == address(this), "FlashBorrower: Untrusted loan initiator");
         //(address borrowToken, uint256 borrowAmount, 
+
         (uint256 repayAmount, address repayJToken, address accountToLiquidate, address collateralJToken) = 
             abi.decode(data, (uint256, address, address, address));
         //require(borrowToken == token, "encoded data (borrowToken) does not match");
         //require(borrowAmount == amount, "encoded data (borrowAmount) does not match");
         address repayTokenUnderlying = IJToken(repayJToken).underlying();
-        IERC20(token).approve(joeRouter, amount + fee);
+        address collateralTokenUnderlying = IJToken(collateralJToken).underlying();
+        IERC20(token).approve(joeRouter, amount);
+        IERC20(token).approve(msg.sender,amount + fee);
         IERC20(repayTokenUnderlying).approve(joeRouter,repayAmount);
+        IERC20(repayTokenUnderlying).approve(repayJToken,repayAmount);
+
         // your logic is written here...
 
-        console.log("borrowed ",IERC20(token).balanceOf(address(this)) , IERC20(token).symbol());
         //console.log("borrowed ",amount , IERC20(token).symbol());
 
         console.log("to liquidate",accountToLiquidate); 
@@ -77,9 +83,14 @@ contract Liquidatooor is ERC3156FlashBorrowerInterface{
         path[0] = token;
         path[1] = repayTokenUnderlying;
 
-        uint256[] memory amounts = IJoeRouter02(joeRouter).swapTokensForExactTokens(repayAmount,amount,path,address(this),block.timestamp+15);
+        uint256[] memory amounts = IJoeRouter02(joeRouter).swapTokensForExactTokens(
+            repayAmount,
+            amount,
+            path,
+            address(this),
+            block.timestamp+15);
         //add some checks here on amounts
-        console.log("after swap ", IERC20(IJToken(repayJToken).underlying()).balanceOf(address(this)),IERC20(repayTokenUnderlying).symbol());
+        //console.log("after swap ", IERC20(IJToken(repayJToken).underlying()).balanceOf(address(this)),IERC20(repayTokenUnderlying).symbol());
 
         for (uint i = 0; i< amounts.length; i++){
         //    console.log(amounts[i]);
@@ -87,10 +98,30 @@ contract Liquidatooor is ERC3156FlashBorrowerInterface{
 
         uint256 returnCode_liq = IJToken(repayJToken).liquidateBorrow(accountToLiquidate,repayAmount,collateralJToken);
         console.log("return code",returnCode_liq);
+        console.log("seized_JToken",IERC20(collateralJToken).balanceOf(address(this)));
         require(returnCode_liq == 0,"bad return code from liquidation");
 
-        //redeem to avax
-        //repay flashloan
+        IJToken(collateralJToken).redeem(IERC20(collateralJToken).balanceOf(address(this)));
+        uint256 seizedBalance = IERC20(collateralTokenUnderlying).balanceOf(address(this));
+        console.log("redeemed",seizedBalance);
+        IERC20(collateralTokenUnderlying).approve(joeRouter,seizedBalance);
+
+        path[0] = collateralTokenUnderlying;
+        path[1] = token;
+
+        amounts = IJoeRouter02(joeRouter).getAmountsOut(seizedBalance,path); 
+        for (uint i = 0; i< amounts.length; i++){
+           console.log(amounts[i]);
+        }
+
+        console.log("out",amounts[1]*(99*10^18)/(100*10^18));
+
+        amounts = IJoeRouter02(joeRouter).swapExactTokensForTokens(
+            seizedBalance,
+            amounts[1]*(99*10^18)/(100*10^18),
+            path,
+            address(this),
+            block.timestamp+15);
 
         return keccak256("ERC3156FlashBorrowerInterface.onFlashLoan");
     }

@@ -6,5 +6,9 @@ interface IJToken {
         uint256 repayAmount,
         address JTokenCollateral
     ) external returns (uint256);
+
     function underlying() external view returns (address);
+
+    function redeem(uint256 redeemTokens) external returns (uint256);
+
 }
