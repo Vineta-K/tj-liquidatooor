@@ -8,7 +8,6 @@ import pytest
 
 #hardcoded for testing for now -> need to loop through???
 lender_address = jToken_addresses["jWETH"]
-borrow_token = "0x49D5c2BdFfac6CE2BFdB6640F4F80f226bc10bAB"
 repayAmount = int(34710)
 repayJToken = jToken_addresses["jUSDC"]
 accountToLiquidate = "0xa3167c4ba7e6b61cbfa10f1ae0a93bb3f3c00957"
@@ -31,7 +30,6 @@ def flashloan(liquidator):
     account = accounts[0]
     liquidator.liquidateWithFlashLoan(
         lender_address,
-        borrow_token,
         repayAmount,
         repayJToken,
         accountToLiquidate,
