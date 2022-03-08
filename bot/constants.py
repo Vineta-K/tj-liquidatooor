@@ -12,7 +12,7 @@ jToken_addresses = {
 }
 
 underlying_decimals = {
-  "jAVAX": 18,
+"jAVAX": 18,
 "jWETH": 18,
 "jWBTC": 8,
 "jUSDC": 6,
@@ -24,10 +24,9 @@ underlying_decimals = {
 "jUSDCNative": 6, 
 }
 
-JoeTroller_address = "0xdc13687554205E5b89Ac783db14bb5bba4A1eDaC"
+Joetroller_address = "0xdc13687554205E5b89Ac783db14bb5bba4A1eDaC"
+Joetroller_impl_address = "0x1Ed8368Ca83437DbF43E50e85E6f82342e92CFCB"
 PriceOracle_address = "0xd7Ae651985a871C1BC254748c40Ecc733110BC2E"
-JoeLens_address = "0xFDF50FEa3527FaD31Fa840B748FD3694aE8a47cc"
-
 
 graphql_uri = "https://api.thegraph.com/subgraphs/name/traderjoe-xyz/lending"
 snowtrace_api = "https://api.snowtrace.io/api"

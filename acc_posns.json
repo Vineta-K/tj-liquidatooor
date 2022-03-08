@@ -1,0 +1,202 @@
+{
+    "0x3b425b9d32E1D12bf02B70Ad14FF7164533B4208": {
+        "0xC22F01ddc8010Ee05574028528614634684EC29e": {
+            "symbol": "jAVAX",
+            "borrow_balance": 0.0,
+            "borrow_balance_usd": 0.0,
+            "jToken_balance": 1e-08,
+            "supply_balance_underlying": 2.035511881354502e-10,
+            "supply_balance_usd": 1.5085796784493356e-08
+        },
+        "0xcE095A9657A02025081E0607c8D8b081c76A75ea": {
+            "symbol": "jMIM",
+            "borrow_balance": 0.11579216871078209,
+            "borrow_balance_usd": 0.11551682651280472,
+            "jToken_balance": 0.0,
+            "supply_balance_underlying": 0.0,
+            "supply_balance_usd": 0.0
+        }
+    },
+    "0x4698C06218aF10509EA87bCC1eE425b287943CC5": {
+        "0xC22F01ddc8010Ee05574028528614634684EC29e": {
+            "symbol": "jAVAX",
+            "borrow_balance": 0.0,
+            "borrow_balance_usd": 0.0,
+            "jToken_balance": 22.88112941,
+            "supply_balance_underlying": 0.4657481077286493,
+            "supply_balance_usd": 34.51800684789543
+        },
+        "0xcE095A9657A02025081E0607c8D8b081c76A75ea": {
+            "symbol": "jMIM",
+            "borrow_balance": 3.0328127666763947,
+            "borrow_balance_usd": 3.0256010411985153,
+            "jToken_balance": 0.0,
+            "supply_balance_underlying": 0.0,
+            "supply_balance_usd": 0.0
+        },
+        "0xEd6AaF91a2B084bd594DBd1245be3691F9f637aC": {
+            "symbol": "jUSDC",
+            "borrow_balance": 26.597276,
+            "borrow_balance_usd": 26.595207529845478,
+            "jToken_balance": 0.0,
+            "supply_balance_underlying": 0.0,
+            "supply_balance_usd": 0.0
+        }
+    },
+    "0x6394309017350A569d8e1120D5Aab024513E7188": {
+        "0xC22F01ddc8010Ee05574028528614634684EC29e": {
+            "symbol": "jAVAX",
+            "borrow_balance": 0.0,
+            "borrow_balance_usd": 0.0,
+            "jToken_balance": 2.61205859,
+            "supply_balance_underlying": 0.05316876294739088,
+            "supply_balance_usd": 3.9404985077930244
+        },
+        "0x8b650e26404AC6837539ca96812f0123601E4448": {
+            "symbol": "jUSDT",
+            "borrow_balance": 2.4e-05,
+            "borrow_balance_usd": 2.4003083039999997e-05,
+            "jToken_balance": 0.0,
+            "supply_balance_underlying": 0.0,
+            "supply_balance_usd": 0.0
+        },
+        "0x585E7bC75089eD111b656faA7aeb1104F5b96c15": {
+            "symbol": "jLINK",
+            "borrow_balance": 0.0,
+            "borrow_balance_usd": 0.0,
+            "jToken_balance": 18.09300141,
+            "supply_balance_underlying": 0.3635930016484972,
+            "supply_balance_usd": 4.792989618645313
+        },
+        "0xcE095A9657A02025081E0607c8D8b081c76A75ea": {
+            "symbol": "jMIM",
+            "borrow_balance": 23.578380360934904,
+            "borrow_balance_usd": 23.522313330274635,
+            "jToken_balance": 0.0,
+            "supply_balance_underlying": 0.0,
+            "supply_balance_usd": 0.0
+        },
+        "0xC146783a59807154F92084f9243eb139D58Da696": {
+            "symbol": "jXJOE",
+            "borrow_balance": 0.0,
+            "borrow_balance_usd": 0.0,
+            "jToken_balance": 0.0,
+            "supply_balance_underlying": 0.0,
+            "supply_balance_usd": 0.0
+        }
+    },
+    "0x89410f8AE51Dd2b64D2288DAb711e872a186F30A": {
+        "0xC22F01ddc8010Ee05574028528614634684EC29e": {
+            "symbol": "jAVAX",
+            "borrow_balance": 0.0,
+            "borrow_balance_usd": 0.0,
+            "jToken_balance": 0.32307143,
+            "supply_balance_underlying": 0.006576157342911894,
+            "supply_balance_usd": 0.48737899398556705
+        },
+        "0xC146783a59807154F92084f9243eb139D58Da696": {
+            "symbol": "jXJOE",
+            "borrow_balance": 0.0,
+            "borrow_balance_usd": 0.0,
+            "jToken_balance": 0.0,
+            "supply_balance_underlying": 0.0,
+            "supply_balance_usd": 0.0
+        },
+        "0x3fE38b7b610C0ACD10296fEf69d9b18eB7a9eB1F": {
+            "symbol": "jWBTC",
+            "borrow_balance": 0.0,
+            "borrow_balance_usd": 0.0,
+            "jToken_balance": 0.0,
+            "supply_balance_underlying": 0.0,
+            "supply_balance_usd": 0.0
+        },
+        "0xEd6AaF91a2B084bd594DBd1245be3691F9f637aC": {
+            "symbol": "jUSDC",
+            "borrow_balance": 0.0,
+            "borrow_balance_usd": 0.0,
+            "jToken_balance": 0.0,
+            "supply_balance_underlying": 0.0,
+            "supply_balance_usd": 0.0
+        },
+        "0xcE095A9657A02025081E0607c8D8b081c76A75ea": {
+            "symbol": "jMIM",
+            "borrow_balance": 0.5909585319210859,
+            "borrow_balance_usd": 0.5895532916280308,
+            "jToken_balance": 0.0,
+            "supply_balance_underlying": 0.0,
+            "supply_balance_usd": 0.0
+        }
+    },
+    "0x96f4151E9e320e5a615ff6530Dd871761A7C7ceb": {
+        "0xcE095A9657A02025081E0607c8D8b081c76A75ea": {
+            "symbol": "jMIM",
+            "borrow_balance": 10.229547041837565,
+            "borrow_balance_usd": 10.20522220192678,
+            "jToken_balance": 0.0,
+            "supply_balance_underlying": 0.0,
+            "supply_balance_usd": 0.0
+        },
+        "0xC146783a59807154F92084f9243eb139D58Da696": {
+            "symbol": "jXJOE",
+            "borrow_balance": 0.0,
+            "borrow_balance_usd": 0.0,
+            "jToken_balance": 813.91215741,
+            "supply_balance_underlying": 16.27824314820863,
+            "supply_balance_usd": 21.38133722075726
+        }
+    },
+    "0xa5C7F0A64eFeC19C2409158AaFf86c189Df37776": {
+        "0xC22F01ddc8010Ee05574028528614634684EC29e": {
+            "symbol": "jAVAX",
+            "borrow_balance": 0.0,
+            "borrow_balance_usd": 0.0,
+            "jToken_balance": 6.13066533,
+            "supply_balance_underlying": 0.1247904211982312,
+            "supply_balance_usd": 9.24859713221189
+        },
+        "0x585E7bC75089eD111b656faA7aeb1104F5b96c15": {
+            "symbol": "jLINK",
+            "borrow_balance": 0.6631338121042358,
+            "borrow_balance_usd": 8.741624461355832,
+            "jToken_balance": 0.0,
+            "supply_balance_underlying": 0.0,
+            "supply_balance_usd": 0.0
+        }
+    },
+    "0xE729E82C62bA98Ee226DbF680803CFB4189DBE30": {
+        "0xC22F01ddc8010Ee05574028528614634684EC29e": {
+            "symbol": "jAVAX",
+            "borrow_balance": 0.0,
+            "borrow_balance_usd": 0.0,
+            "jToken_balance": 4.86140958,
+            "supply_balance_underlying": 0.098954569602206,
+            "supply_balance_usd": 7.333823701006919
+        },
+        "0xc988c170d0E38197DC634A45bF00169C7Aa7CA19": {
+            "symbol": "jDAI",
+            "borrow_balance": 11.370823886023134,
+            "borrow_balance_usd": 11.369334308094064,
+            "jToken_balance": 0.0,
+            "supply_balance_underlying": 0.0,
+            "supply_balance_usd": 0.0
+        }
+    },
+    "0xFF599e47BaEc9B0FF247e35024143edD08a6A91B": {
+        "0xC22F01ddc8010Ee05574028528614634684EC29e": {
+            "symbol": "jAVAX",
+            "borrow_balance": 0.02602368393579713,
+            "borrow_balance_usd": 1.9286942563954856,
+            "jToken_balance": 1.97001116,
+            "supply_balance_underlying": 0.04009981122580965,
+            "supply_balance_usd": 2.9719188022944025
+        },
+        "0xEd6AaF91a2B084bd594DBd1245be3691F9f637aC": {
+            "symbol": "jUSDC",
+            "borrow_balance": 3.707432,
+            "borrow_balance_usd": 3.70714367301336,
+            "jToken_balance": 0.0,
+            "supply_balance_underlying": 0.0,
+            "supply_balance_usd": 0.0
+        }
+    }
+}
