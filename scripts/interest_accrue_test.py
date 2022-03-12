@@ -1,6 +1,6 @@
 from brownie import Contract,chain,accounts,web3
 
-from scripts.constants import jToken_addresses,contract_addresses
+from bot.constants import jToken_addresses,contract_addresses
 
 account = "0xa3167c4ba7e6b61cbfa10f1ae0a93bb3f3c00957"
 

@@ -3,7 +3,7 @@ from brownie import (
     Liquidatooor)
 
 from scripts.useful_scripts import trace_on_revert 
-from scripts.constants import jToken_addresses,contract_addresses
+from bot.constants import jToken_addresses,contract_addresses
 
 #hardcoded for testing for now -> need to loop through???
 lender_address = jToken_addresses["jWETH"]

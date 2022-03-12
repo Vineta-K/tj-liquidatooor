@@ -3,7 +3,7 @@ from brownie import (
     accounts,
 )
 from scripts.useful_scripts import trace_on_revert
-from scripts.constants import contract_addresses
+from bot.constants import contract_addresses
 
 def deploy_liquidator():
     account = accounts[0]
