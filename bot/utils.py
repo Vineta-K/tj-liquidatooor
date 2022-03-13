@@ -1,6 +1,6 @@
 import requests
-from secrets import snowtrace_api_token
-from constants import snowtrace_api
+from bot.secrets import snowtrace_api_token
+from bot.constants import snowtrace_api
 
 def get_abi(contract_address):
   params = {
