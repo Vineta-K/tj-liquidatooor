@@ -9,21 +9,31 @@ from scripts.useful_scripts import trace_on_revert
 from create_lending_positions import create_shortfall_position,create_position
 
 def test_bot():
+
+
+    #Setup bot and position that is almost underwater
     liquidator_addresss = deploy_liquidator().tx.contract_address
     liquidator_bot = LiquidatorBot(
         rpc_endpoint="http://127.0.0.1:8545",
         liquidator_contract_address=liquidator_addresss,
         )
-    _,_,BorrowjToken,Joetroller = create_position('jUSDC',1000)
-    test_accts=[str(accounts[-1])]
-    while True:
+    _,_,BorrowjTokens,Joetroller = create_position(['jWBTC','jUSDT','jUSDC'],1000)
+
+
+    test_accts=[str(accounts[-1])] #Feed this account to bot to also watch as well as graph queries
+    while True: #Rn a loop of bot then accrue interest on accounts borrow position until a liquidation is detected
         liquidator_bot.main_loop(test_accts=test_accts)
         block = chain[-1]
-        tx = chain.get_transaction(web3.toHex(block['transactions'][0]))
-        if "LiquidateBorrow" in tx.events:
-            print (tx.events['LiquidateBorrow'])
-            break
-        BorrowjToken.accrueInterest({"from":accounts[-1]})
+        for tx_name in block['transactions']:
+            tx = chain.get_transaction(web3.toHex(tx_name))
+            if "LiquidateBorrow" in tx.events:
+                print (tx.events['LiquidateBorrow'])
+                if str(tx.events['LiquidateBorrow']["borrower"]) == str(accounts[-1]):
+                    return
+        chain.sleep(42069)
+        chain.mine()
+        for BorrowjToken in BorrowjTokens:
+            BorrowjToken.accrueInterest({"from":accounts[-1]})
         error,liquidity,shortfall = Joetroller.getAccountLiquidity(accounts[-1])
         print(f"New Liquidity: {liquidity/1e18} New shortfall: {shortfall/1e18}, Timestamp {chain[-1].timestamp}")
 

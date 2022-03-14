@@ -36,10 +36,10 @@ def flashloan(
 def test_liquidate(liquidator):
     Joetroller = Contract.from_explorer(contract_addresses['Joetroller'])
     lender_address = jToken_addresses['jWETH']
-    borrow_jToken = 'jUSDC'
+    borrow_jTokens = ['jWBTC','jUSDT','jUSDC'] 
 
     #Create account to liquidate (accounts[-1] hardcoded for now)
-    _,borrow_amount_underlying = create_shortfall_position(borrow_jToken , supply_amount_AVAX = 100)
+    _,borrow_amount_underlying = create_shortfall_position(borrow_jTokens , supply_amount_AVAX = 100) #Last jtoken in list is biggest posn (see fcn impl)
 
     #Check account is in shortfall
     error,liquidity,shortfall = Joetroller.getAccountLiquidity(accounts[-1])
@@ -51,8 +51,8 @@ def test_liquidate(liquidator):
     result = flashloan(
         liquidator,
         lender_address,
-        borrow_amount_underlying*0.49,
-        jToken_addresses[borrow_jToken],
+        borrow_amount_underlying[-1]*0.49,
+        jToken_addresses[borrow_jTokens[-1]],
         str(accounts[-1]),
         jToken_addresses['jAVAX'])       
     assert not isinstance(result,Exception) 

@@ -9,7 +9,7 @@ def get_abi(contract_address):
     'address': contract_address,
     'apikey': snowtrace_api_token
   }
-  return requests.get(snowtrace_api,params).json()['result']
+  return requests.get(snowtrace_api, params).json()['result']
 
 def run_graph_query(uri, query, statusCode=200, headers=None):
     request = requests.post(uri, json={'query': query}, headers=headers)

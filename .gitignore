@@ -9,3 +9,4 @@ secrets.py
 node_modules
 artifacts/
 cache/
+.pytest_cache

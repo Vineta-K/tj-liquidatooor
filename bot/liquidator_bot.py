@@ -30,8 +30,14 @@ liq_query = """{
 }"""
 
 class LiquidatorBot ():
-
-  def __init__(self,rpc_endpoint = rpc_endpoint, executor_account = None, liquidator_contract_address=None):
+  """
+  Liquidator bot that queries graph api, works out liquidation parameters then calls liquidator smart contract in a loop.
+  rpc_endpoint (str): endpoint to connect to w3
+  * executor_account (str): account to call the liquidator contract from
+  * liquidator_contract_address (str): address of liquidator contract.
+  If executor contract and liquidator contract address aren't given, the bot will still track underwater accounts bot not attempt to perform the liquidation
+  """
+  def __init__(self,rpc_endpoint = rpc_endpoint, executor_account = None, liquidator_contract_address=  None):
     #Connect to w3
     w3 = Web3(Web3.HTTPProvider(rpc_endpoint))
     if (w3.isConnected()):
@@ -39,6 +45,7 @@ class LiquidatorBot ():
     else:
       print("Connection to w3 failed")
 
+    #Dodgy accounting
     if w3.eth.accounts:
       executor_account = w3.eth.accounts[0] #Pretty sure this needs to be changed for working with mainnet
 
@@ -69,20 +76,20 @@ class LiquidatorBot ():
     self.executor_account = executor_account
     self.flash_fee = 8e-4 #unhardcode at some point
 
-  def run(self,delay=30):
-    while True:
-      self.main_loop(False,False)
-      time.sleep(delay)
+  def run(self, verbose=False, delay=1):
+    while True: #Probably a nicer way to do this
+      self.main_loop(verbose)
+      time.sleep(delay) #Delay so we aren't spamming graph api too hard (maybe not needed - bot isn't that fast!)
 
-  def main_loop(self,verbose=False,output_files=False,test_accts=[]):
+  def main_loop(self,verbose=False,test_accts=[]):
     """
-    Main loop of bot -> write stuff here later
+    Queries graph api, works out liquidation parameters then calls liquidator smart contract
     """
     ##Fetch underwater accounts from the graph (kinda delayed, a bot to beat others probably needs to look at events and create own db of lending accounts!)
-    underwater_accs = run_graph_query(graphql_uri, liq_query)["data"]["accounts"]
-    if output_files == True:
-      with open("underwater_accs.json","w") as f:
-        json.dump(underwater_accs,f)
+    if test_accts: #So we don't try and liq all the graph ones during tests
+      underwater_accs = []
+    else:
+      underwater_accs = run_graph_query(graphql_uri, liq_query)["data"]["accounts"]
 
     ##Double check graph data with on chain contracts  
     checked_underwater_accounts = test_accts #Allows accts not on graph query to be added for testing purposes 
@@ -97,8 +104,7 @@ class LiquidatorBot ():
         printv(f"{address}: Shortfall: {shortfall/1e18}",verbose)
         checked_underwater_accounts.append(address) #Add account to new list if actually in shortfall
 
-    underwater_accounts_positions = {} # used only for logging atm
-    ##Find the details of the lending and borrowing positions that the underwater accounts hold - not really necessary to store it all in dicts like this but feel it may be nicer for doing interesting algorithms later (which account to liquidate first, then which positions (knapsack))
+    ##Find the details of the lending and borrowing positions that the underwater accounts hold, work out liquidation parameters and perform the liquidation
     for account in checked_underwater_accounts: #Iterate through each account in the underwater list
       
       account_position = self.get_account_position(account)
@@ -112,9 +118,7 @@ class LiquidatorBot ():
       #quick dirty logic for lender -> this could be improved by looking for the most liquid market (largest possible loan)
       flash_lender_jToken = [jToken for jToken in jToken_addresses.values() if jToken != repay_jToken and jToken != seize_jToken][0] #lol python
 
-      if account == str(self.w3.eth.accounts[-1]):
-
-        print(
+      printv(
         f"""
         {account}: Repay {repay_usd}USD of {account_position[repay_jToken]['symbol']}, receive {actual_seize_usd}USD of {account_position[seize_jToken]['symbol']}
         Profit before gas: {profit_before_gas}
@@ -122,33 +126,24 @@ class LiquidatorBot ():
         Flash Borrow jToken: {flash_lender_jToken}
         Repay jToken: {repay_jToken}
         Seized jToken {seize_jToken}
-        """)
+        """,verbose)
 
-        if self.Liquidator:
+      if self.Liquidator and self.executor_account:
 
-          tx = self.Liquidator.functions.liquidateWithFlashLoan(
+        tx = self.Liquidator.functions.liquidateWithFlashLoan(
               flash_lender_jToken,
               int(repay_amount),
               repay_jToken,
               account,
               seize_jToken
           )
-          try:
-            gas_cost = tx.estimateGas({"from":self.executor_account})
-            print(f"gas: {gas_cost}")
-
-            tx.transact({"from":self.executor_account})
-          except Exception as e:
-            print(e)
-
-      #Add the dict containing the account positions to the dict of accounts for looking at later
-      underwater_accounts_positions[account] = account_position  
-
-    #Display data
-    printv(underwater_accounts_positions,verbose)
-    if output_files:
-      with open("acc_posns.json","w") as f:
-        json.dump(underwater_accounts_positions,f)
+        try:
+          gas_cost = tx.estimateGas({"from":self.executor_account})
+          printv(f"gas: {gas_cost}",verbose) #Need to utilise
+          tx.transact({"from":self.executor_account})
+          print(f"Liquidation attempted: {repay_usd}USD of {account_position[repay_jToken]['symbol']}, receiving {actual_seize_usd}USD of {account_position[seize_jToken]['symbol']} for {account} ")
+        except Exception as e:
+          printv(e,verbose)
 
   def get_account_position(self,account):
     assets = self.Joetroller.functions.getAssetsIn(account).call() #Get markets the account is in
@@ -185,6 +180,7 @@ class LiquidatorBot ():
   def largest_seizable(self,acc_position):
     jToken_to_seize =None
     seizable_usd = 0
+    #Loop through and find largest supply position
     for jToken, position_data in acc_position.items():
       if position_data['supply_balance_usd'] > seizable_usd:
         jToken_to_seize = jToken
@@ -194,27 +190,21 @@ class LiquidatorBot ():
   def find_repay_amount(self, acc_position, max_seizable_usd):
     jToken_to_repay = None
     repay_amount_usd = 0
-
+    #Loop through and find largest repay position
     for jToken, position_data in acc_position.items():
       if position_data["borrow_balance_usd"] * self.close_factor > repay_amount_usd:
         jToken_to_repay = jToken
         repay_amount = position_data["borrow_balance"] * self.close_factor
         repay_amount_usd = position_data["borrow_balance_usd"] * self.close_factor
-
+    #If largest repay position results in too large a seizable amount, scale it so correct
     if repay_amount_usd * self.liquidation_incentive > max_seizable_usd:
       repay_amount_usd = max_seizable_usd/ self.liquidation_incentive
       repay_amount = repay_amount * max_seizable_usd / (repay_amount_usd * self.liquidation_incentive)
     return jToken_to_repay, repay_amount, repay_amount_usd,
 
+  def check_accounts(self):
+    pass #todo move some code out
+
 if __name__ == "__main__":
-    lb = LiquidatorBot("http://localhost:8545",liquidator_contract_address="0x8f86403A4DE0BB5791fa46B8e795C547942fE4Cf")
+    lb = LiquidatorBot("http://localhost:8545",verbose=True)
     lb.run()
-
-
-
-
-
-        
-
-        
-
