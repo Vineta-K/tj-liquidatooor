@@ -18,6 +18,6 @@ def run_graph_query(uri, query, statusCode=200, headers=None):
     else:
         raise Exception(f"Unexpected status code returned: {request.status_code}")
 
-def printv(str,bool):
+def printv(str, bool):
     if bool:
         print(str)

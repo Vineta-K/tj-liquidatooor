@@ -4,7 +4,7 @@ wallets:
   from_key: ${PRIVATE_KEY}
 
 networks:
-  default: hardhat-local
+  default: hardhat-dev
   live:
     gas_limit: max
     reverting_tx_gas_limit: False

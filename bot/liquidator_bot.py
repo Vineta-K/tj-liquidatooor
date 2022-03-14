@@ -81,39 +81,41 @@ class LiquidatorBot ():
       self.main_loop(verbose)
       time.sleep(delay) #Delay so we aren't spamming graph api too hard (maybe not needed - bot isn't that fast!)
 
-  def main_loop(self,verbose=False,test_accts=[]):
+  def main_loop(self, verbose=False, test_accts=[]):
     """
     Queries graph api, works out liquidation parameters then calls liquidator smart contract
     """
     ##Fetch underwater accounts from the graph (kinda delayed, a bot to beat others probably needs to look at events and create own db of lending accounts!)
-    if test_accts: #So we don't try and liq all the graph ones during tests
-      underwater_accs = []
-    else:
-      underwater_accs = run_graph_query(graphql_uri, liq_query)["data"]["accounts"]
+    #if test_accts: #So we don't try and liq all the graph ones during tests
+    #  underwater_accs = []
+    #else:
+    underwater_accs = run_graph_query(graphql_uri, liq_query)["data"]["accounts"]
 
     ##Double check graph data with on chain contracts  
     checked_underwater_accounts = test_accts #Allows accts not on graph query to be added for testing purposes 
     for acc_data in underwater_accs:
       address = self.w3.toChecksumAddress(acc_data["id"].lower())
-      error,liquidity,shortfall = self.Joetroller.functions.getAccountLiquidity(address).call() #Check liquidity of account
-      if error!= 0:
-        printv(f"Error getting account liquidity for {address}",verbose)
-      if liquidity!=0:
-        printv(f"{address}: Liquidity:{liquidity/1e18} ",verbose)
+      error, liquidity, shortfall = self.Joetroller.functions.getAccountLiquidity(address).call() #Check liquidity of account
+      if error != 0:
+        print(f"Error getting account liquidity for {address}")
+      if liquidity != 0:
+        print(f"{address}: Liquidity:{liquidity/1e18} ")
       else:
-        printv(f"{address}: Shortfall: {shortfall/1e18}",verbose)
+        print(f"{address}: Shortfall: {shortfall/1e18}")
         checked_underwater_accounts.append(address) #Add account to new list if actually in shortfall
 
     ##Find the details of the lending and borrowing positions that the underwater accounts hold, work out liquidation parameters and perform the liquidation
     for account in checked_underwater_accounts: #Iterate through each account in the underwater list
       
+      #Find amount to repay
       account_position = self.get_account_position(account)
-      seize_jToken,max_seize_usd = self.largest_seizable(account_position)
-      repay_jToken,repay_amount,repay_usd,= self.find_repay_amount(account_position, max_seize_usd,)
+      seize_jToken ,max_seize_usd = self.largest_seizable(account_position)
+      repay_jToken, repay_amount, repay_usd,= self.find_repay_amount(account_position, max_seize_usd,)
 
+      #Find profit
       actual_seize_usd = repay_usd * self.liquidation_incentive 
-      profit_before_gas = actual_seize_usd - repay_usd*(1+self.flash_fee)
-      pc = repay_usd/account_position[repay_jToken]['borrow_balance_usd']
+      profit_before_gas = actual_seize_usd - repay_usd * (1 + self.flash_fee)
+      pc = repay_usd / account_position[repay_jToken]['borrow_balance_usd']
 
       #quick dirty logic for lender -> this could be improved by looking for the most liquid market (largest possible loan)
       flash_lender_jToken = [jToken for jToken in jToken_addresses.values() if jToken != repay_jToken and jToken != seize_jToken][0] #lol python
@@ -128,22 +130,30 @@ class LiquidatorBot ():
         Seized jToken {seize_jToken}
         """,verbose)
 
-      if self.Liquidator and self.executor_account:
-
+      if self.Liquidator and self.executor_account: #Execute the liquidation
         tx = self.Liquidator.functions.liquidateWithFlashLoan(
               flash_lender_jToken,
-              int(repay_amount),
+              int((repay_amount)),
               repay_jToken,
               account,
               seize_jToken
           )
-        try:
-          gas_cost = tx.estimateGas({"from":self.executor_account})
-          printv(f"gas: {gas_cost}",verbose) #Need to utilise
-          tx.transact({"from":self.executor_account})
-          print(f"Liquidation attempted: {repay_usd}USD of {account_position[repay_jToken]['symbol']}, receiving {actual_seize_usd}USD of {account_position[seize_jToken]['symbol']} for {account} ")
-        except Exception as e:
-          printv(e,verbose)
+        gas = self.try_tx(tx.estimateGas, {"from":self.executor_account})
+        if not isinstance(gas,Exception): #If gas estimation didn't work, don't try actual tx
+          gas_cost_usd = 1e-36 * gas * self.w3.eth.gas_price * self.PriceOracle.functions.getUnderlyingPrice(jToken_addresses['jAVAX']).call() #Probably a not ideal estimation
+          profit = profit_before_gas - gas_cost_usd
+          if profit > 0: #Ensure profit after gas
+            print(f"Liquidation attempted: {repay_usd}USD of {account_position[repay_jToken]['symbol']}, receiving {actual_seize_usd}USD of {account_position[seize_jToken]['symbol']} for {account} ")
+            print(f"Gas: {gas_cost_usd} Profit: {profit}")
+            self.try_tx(tx.transact, {"from":self.executor_account}, p = True)
+
+  def try_tx(self, txn, *args, p = False):
+    try:
+      return txn(*args)
+    except Exception as e:
+      if p:
+        print(e)
+      return e
 
   def get_account_position(self,account):
     assets = self.Joetroller.functions.getAssetsIn(account).call() #Get markets the account is in
@@ -163,21 +173,22 @@ class LiquidatorBot ():
       error, jToken_balance, borrow_balance, exchange_rate = contract.functions.getAccountSnapshot(account).call()
       borrow_balance_usd = borrow_balance/1e18 * price/1e18
       supply_balance_usd = jToken_balance/1e18 * price/1e18 * exchange_rate/1e18
+      supply_balance_underlying = jToken_balance * exchange_rate/1e18
 
       #Add the jToken position to dict of positions for this account
       account_position[jToken] = { 
         "symbol":symbol,
-        "borrow_balance":borrow_balance,
+        "borrow_balance": borrow_balance,
         "borrow_balance_usd": borrow_balance_usd,
         "jToken_balance": jToken_balance,
         "jToken_decimals": decimals,
-        "supply_balance_underlying": jToken_balance* exchange_rate/1e18,
+        "supply_balance_underlying": supply_balance_underlying,
         "underlying_decimals": underlying_decimals[symbol],
         "supply_balance_usd": supply_balance_usd
       }
     return account_position
 
-  def largest_seizable(self,acc_position):
+  def largest_seizable(self, acc_position):
     jToken_to_seize =None
     seizable_usd = 0
     #Loop through and find largest supply position
@@ -185,7 +196,7 @@ class LiquidatorBot ():
       if position_data['supply_balance_usd'] > seizable_usd:
         jToken_to_seize = jToken
         seizable_usd = position_data['supply_balance_usd'] 
-    return jToken_to_seize,seizable_usd
+    return jToken_to_seize, seizable_usd
 
   def find_repay_amount(self, acc_position, max_seizable_usd):
     jToken_to_repay = None
@@ -194,12 +205,13 @@ class LiquidatorBot ():
     for jToken, position_data in acc_position.items():
       if position_data["borrow_balance_usd"] * self.close_factor > repay_amount_usd:
         jToken_to_repay = jToken
-        repay_amount = position_data["borrow_balance"] * self.close_factor
+        repay_amount = position_data["borrow_balance"] * self.close_factor #Can only repay borrow * close factor
         repay_amount_usd = position_data["borrow_balance_usd"] * self.close_factor
     #If largest repay position results in too large a seizable amount, scale it so correct
     if repay_amount_usd * self.liquidation_incentive > max_seizable_usd:
-      repay_amount_usd = max_seizable_usd/ self.liquidation_incentive
-      repay_amount = repay_amount * max_seizable_usd / (repay_amount_usd * self.liquidation_incentive)
+      repay_amount_usd_old = repay_amount_usd
+      repay_amount_usd = max_seizable_usd / self.liquidation_incentive #Repay so that we will seize the max allowed amount
+      repay_amount = repay_amount * repay_amount_usd / repay_amount_usd_old #Scale the repay underlying amount by the factor that the usd amount was reduced by
     return jToken_to_repay, repay_amount, repay_amount_usd,
 
   def check_accounts(self):

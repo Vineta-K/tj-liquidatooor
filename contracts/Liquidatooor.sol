@@ -8,11 +8,11 @@ import "../interfaces/IJoeRouter02.sol";
 import "../interfaces/IERC20.sol";
 import "../interfaces/IJToken.sol";
 import "../interfaces/Joetroller.sol";
-import "../node_modules/hardhat/console.sol";
+import "../node_modules/hardhat/console.sol"; //Remove for production
 
-
-//Contract provides ablity to liquidate underwater account by calling liquidateWithFlashLoan
-//This function performs all the necessary steps
+/* 
+Contract provides ablity for the owner to liquidate underwater accounts by calling liquidateWithFlashLoan
+*/
 contract Liquidatooor is ERC3156FlashBorrowerInterface, Ownable{
 
     address public joetroller;
@@ -30,14 +30,25 @@ contract Liquidatooor is ERC3156FlashBorrowerInterface, Ownable{
         address underlying;
     } //Helps with stack to deep issues
 
-    function set_joeRouter(address _joeRouter) external onlyOwner
+    function withdrawToken(address _tokenContract) external onlyOwner
+    {
+        IERC20 tokenContract = IERC20(_tokenContract);
+        uint256 amount = tokenContract.balanceOf(address(this));
+        bool success = tokenContract.transfer(address(msg.sender), amount);
+        require(success, "Failed to send Token");
+    } //To withdraw tokens from contract
+
+    function setJoeRouter(address _joeRouter) external onlyOwner
     {
         joeRouter = _joeRouter;
     } //Incase the JoeRouter changes
 
+    /*
+    Liquidates an underwater account, using TJ implementation of ERC3156 flash loans
+    */
     function liquidateWithFlashLoan(
         address flashLoanLender,
-        uint256 repayAmount,
+        uint256 repayAmount, //Amount of underlying token to repay
         address repayJToken,
         address accountToLiquidate,
         address collateralJToken
@@ -55,17 +66,24 @@ contract Liquidatooor is ERC3156FlashBorrowerInterface, Ownable{
             path
             )[0];
 
-        console.log("need",borrowAmount,IERC20(flashPair.underlying).symbol());
-        console.log("for",repayAmount, IERC20(repayPair.underlying).symbol());
+        console.log("Need ",borrowAmount,IERC20(flashPair.underlying).symbol());
+        console.log("to repay ",repayAmount, IERC20(repayPair.underlying).symbol());
         
         //Perform flashloan
         bytes memory data = abi.encode(repayAmount, repayPair, accountToLiquidate, collateralPair); //Encode params to pass to flashloan callback
-        ERC3156FlashLenderInterface(flashLoanLender).flashLoan(this, address(this), borrowAmount, data); //Initiator address used as second argument for TJ flash loans
+        ERC3156FlashLenderInterface(flashLoanLender).flashLoan(this, address(this), borrowAmount, data); //Initiator address used as second argument for TJ flash loans. On calling this the onFlashLoan function is called, where the liquidation is performed using the flash loaned funds.
 
         //log balance/profit
-        console.log("remaining_balance",IERC20(flashPair.underlying).balanceOf(address(this)));
+        console.log("Remaining token balance ",IERC20(flashPair.underlying).balanceOf(address(this)),IERC20(flashPair.underlying).symbol());
     }
 
+    /*
+    Callback function called after flashloan borrowed. Performs the following steps: 
+    - Swaps flashloaned token to repay token,
+    - Performs liquidation using repay token, seizing collateral as a jToken
+    - Redeems underlying token for the seized jToken collateral
+    - Swaps this underlying token back to flashloaned token so that the flashloan can be repayed
+    */
     function onFlashLoan(
         address initiator,
         address token,
@@ -87,7 +105,7 @@ contract Liquidatooor is ERC3156FlashBorrowerInterface, Ownable{
         IERC20(repayPair.underlying).approve(repayPair.jToken, repayAmount); //Approve the repay token to repay debt to the lender 
 
         //Useful debug output
-        console.log("borrowed ",amount , IERC20(token).symbol());
+        console.log("Borrowed ",amount , IERC20(token).symbol());
         console.log("to liquidate",accountToLiquidate); 
         console.log("using ", IERC20(repayPair.underlying).symbol());
         console.log("seizing ", IERC20(collateralPair.jToken).symbol());
@@ -108,18 +126,17 @@ contract Liquidatooor is ERC3156FlashBorrowerInterface, Ownable{
             accountToLiquidate,
             repayAmount,
             collateralPair.jToken);
-        console.log("return code",returnCode_liq);
-        console.log("seized_JToken",IERC20(collateralPair.jToken).balanceOf(address(this)));
-        require(returnCode_liq == 0,"bad return code from liquidation"); //Check liquidation was successfil
+        console.log("Seized_JToken ",IERC20(collateralPair.jToken).balanceOf(address(this)));
+        require(returnCode_liq == 0,"Bad return code from liquidation"); //Check liquidation was successfil
 
         //Redeem the seized jTokens for the underlying tokens
         uint256 returnCode_redeem = IJToken(collateralPair.jToken).redeem(
             IERC20(collateralPair.jToken).balanceOf(address(this))
             );
-        require(returnCode_redeem == 0,"bad return code from redeem"); //Check redeem was successful
+        require(returnCode_redeem == 0,"Bad return code from redeem"); //Check redeem was successful
 
         uint256 seizedBalance = IERC20(collateralPair.underlying).balanceOf(address(this)); //Find how much underlying we recieved
-        console.log("redeemed",seizedBalance);   
+        console.log("Redeemed ",seizedBalance);   
 
         //Swap the underlying token back to the flashloaned token so we can repay
         path[0] = collateralPair.underlying;
@@ -128,15 +145,15 @@ contract Liquidatooor is ERC3156FlashBorrowerInterface, Ownable{
             seizedBalance,
             path
             ); 
-        console.log("out",amounts[1]*(99*10^18)/(100*10^18));
+        console.log("Borrowed token after swap",amounts[1]);
         IERC20(collateralPair.underlying).approve(joeRouter,seizedBalance); 
         IJoeRouter02(joeRouter).swapExactTokensForTokens(
             seizedBalance,
-            amounts[1]*(99*10^18)/(100*10^18), //slip 1% -doesn't work w/o this atm
+            amounts[1],//*(99*10^18)/(100*10^18), //slip 1% -doesn't work w/o this sometimes
             path,
             address(this),
             block.timestamp+15);
-        //No need to check if we have made profit, if not flash loan repay will fail
+        //No need to check if we have made profit, if not flash loan repay will fail!
         return keccak256("ERC3156FlashBorrowerInterface.onFlashLoan");
     }
 
