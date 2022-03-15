@@ -52,7 +52,7 @@ contract Liquidatooor is ERC3156FlashBorrowerInterface, Ownable{
         address repayJToken,
         address accountToLiquidate,
         address collateralJToken
-    ) external {
+    ) external onlyOwner {
         TokenPair memory  repayPair = TokenPair(repayJToken, IJToken(repayJToken).underlying());  //repay jToken and underlying
         TokenPair memory collateralPair = TokenPair(collateralJToken, IJToken(collateralJToken).underlying()); //collateral jToken and underlying
         TokenPair memory flashPair = TokenPair(flashLoanLender, IJToken(flashLoanLender).underlying()); //flash loaned jToken and underlying 
