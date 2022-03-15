@@ -11,7 +11,7 @@ import "../interfaces/Joetroller.sol";
 import "../node_modules/hardhat/console.sol"; //Remove for production
 
 /* 
-Contract provides ablity for the owner to liquidate underwater accounts by calling liquidateWithFlashLoan
+Contract provides ability for the owner to liquidate underwater accounts by calling liquidateWithFlashLoan
 */
 contract Liquidatooor is ERC3156FlashBorrowerInterface, Ownable{
 
@@ -118,7 +118,7 @@ contract Liquidatooor is ERC3156FlashBorrowerInterface, Ownable{
             amount,
             path,    
             address(this),
-            block.timestamp+15);
+            block.timestamp);
         console.log("After swap ready to repay ", IERC20(IJToken(repayPair.jToken).underlying()).balanceOf(address(this)),IERC20(repayPair.underlying).symbol());
 
         //Liquidate the account, seizing the jToken as collateral
@@ -152,7 +152,7 @@ contract Liquidatooor is ERC3156FlashBorrowerInterface, Ownable{
             amounts[1],//*(99*10^18)/(100*10^18), //slip 1% -doesn't work w/o this sometimes
             path,
             address(this),
-            block.timestamp+15);
+            block.timestamp);
         //No need to check if we have made profit, if not flash loan repay will fail!
         return keccak256("ERC3156FlashBorrowerInterface.onFlashLoan");
     }
