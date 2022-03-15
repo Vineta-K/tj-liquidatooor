@@ -85,6 +85,7 @@ At the moment there is only one test for the bot:
 Most of the development and testing was done on the `hardhat-dev` network (`brownie networks list` for details). However if you wan't call_trace debugging to have correct contract abis + function names it is recommended to manually start a local hardhat node and use `harhdhat-local` network.
 ## Todo/Further work:
 As always there is much more to do that could improve this project:
+- I didn't have time to do the extended parts of this bounty beyond the basics, so a telegram/discord bot hasn't been made.
 - The smart contract could do with more tests, and maybe some of the onFlashLoan function could be broken out into fucntions that couod be unit tested.
 - The liquidation tests have a position where there are three different borrow tokens, but only one collateral token. A position where there are multiple collateral tokens as well should be made and the liquidation funtions tested on it. During `test_bot()` it does appear the bot occasionally liquidates some accounts like this from the Graph dataset but this is not repeatable.
 - The bot could do with unit tests of the logic that calculates the liquidation parameters.
