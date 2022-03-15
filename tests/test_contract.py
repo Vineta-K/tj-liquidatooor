@@ -76,6 +76,7 @@ def test_liquidate(liquidator):
 
     #Check account is now in liquidity
     error, liquidity, shortfall = Joetroller.getAccountLiquidity(test_account)
+    print(f"After Liquidation - Liquidity: {liquidity/1e18} Shortfall: {shortfall/1e18}")
     assert error == 0
     assert liquidity > 0
     assert shortfall == 0
