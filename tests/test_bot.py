@@ -18,6 +18,7 @@ def test_bot():
         start_block = chain[-1].number
         liquidator_bot.main_loop(test_accts=test_accts, verbose=False)
         end_block = chain[-1].number
+        liquidated_test_acc = False
         for i in range(start_block, end_block+1):
             tx_name = chain[i]['transactions'][0] #Default hardhat behaviour one tx per block then new one mined
             tx = chain.get_transaction(web3.toHex(tx_name))
