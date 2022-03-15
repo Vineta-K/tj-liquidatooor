@@ -26,7 +26,7 @@ And hardhat for forking avalanche mainnet.
 
 You should probably use a `venv` but I forgot so my requirements are a bit messy.
 ### Bot:
-The bot is a Python script using web3.py libraries. An instance of the bot can be instantiated and run as follows. The executor account should be the owner of the liquidator smart contract (if left blank it defaults to web3.eth.accounts[0] if possible) .
+The bot is a Python script using web3.py libraries. An instance of the bot can be instantiated and run as follows. The executor account should be the owner of the liquidator smart contract (if left blank it defaults to web3.eth.accounts[0] if possible).
 ```
 import LiquidatorBot
 liquidator_bot = LiquidatorBot(rpc_endpoint, executor_account, liquidator_contract_address)
@@ -53,7 +53,7 @@ function liquidateWithFlashLoan(
 ) external
 ```
 This performs the following steps:
-- Borrows the required capital from the flashLoanLender to liquidate repayAmount of underlying borrow for the accountToLiquidate .
+- Borrows the required capital from the flashLoanLender to liquidate repayAmount of underlying borrow for the accountToLiquidate.
 - Swaps the flash loaned token to the underlying repay token (avoiding re-entrnacy when liquidating).
 - Liquidates the account be repaying repayAmount of the underlying debt, seizing collateralJToken.
 - Redeems the seized collateral jToken for its underlying.
@@ -65,7 +65,7 @@ There are also functions to allow the JoeRouter to be changed in case it is upgr
 ### Tests:
 There are two test files, one for testing the bot, and one for the smart contract. 
 It is recommended to run `brownie test -s` where `-s` gives text output during the test. The tests can take quite long (a few mins), especially those which create lending positions to test.
-#### Smart contract tests
+#### Smart contract tests:
 The smart contract tests are as follows:
 
 `test_set_joerouter()`- ensures joeRouter can be changed by the owner.
@@ -76,12 +76,12 @@ The smart contract tests are as follows:
 
 `test_liquidate()` - creates a lending position on chain that is in shortfall (by borrowing close to limit then accrueing interest over an artificially long time). Then liquidates this position using the `liquidateWithFlashLoan()` method, asserting that the previously underwater account is now no longer in shortfall after the liquidation.
 
-#### Bot tests
+#### Bot tests:
 At the moment there is only one test for the bot:
 
 `test_bot()` - creates an account with a lending position that is close to being underwater. It then runs a loop where the `mainloop()` of the bot is run, followed by the accrual of interest on the account's position. When the test sees an event corresponding to the liquidation of this position (when it is pushed underwater and the bot liquidates it), the loop is broken and the test passes.
 
-#### Network
+#### Network:
 Most of the development and testing was done on the `hardhat-dev` network (`brownie networks list` for details). However if you wan't call_trace debugging to have correct contract abis + function names it is recommended to manually start a local hardhat node and use `harhdhat-local` network.
 ## Todo/Further work:
 As always there is much more to do that could improve this project:
