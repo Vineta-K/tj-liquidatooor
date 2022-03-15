@@ -14,6 +14,7 @@ def create_position(borrow_jTokens, supply_amount_AVAX, acc_ind=-1):
     BorrowjTokens = []
     for borrow_jToken in borrow_jTokens:
         BorrowjTokens.append(Contract.from_explorer(jToken_addresses[borrow_jToken]))
+
     #Calculate parameters for borrow
     _,collateral_factor,_ = Joetroller.markets(jToken_addresses[supply_jToken])
     supply_amount = supply_amount_AVAX*1e18
@@ -22,13 +23,14 @@ def create_position(borrow_jTokens, supply_amount_AVAX, acc_ind=-1):
     borrow_amount_underlying = []
     borrow_amount_usd = []
     l = len(borrow_jTokens)
-    d = l*(l+1)/2
+    d = l*(l+1)/2 #Scaling denominator is sum of l natural numbers.
     for i in range(l):
         borrow_amount_usd.append( ((i+1)/d) *(1 - 1e-9) * supply_amount_usd * collateral_factor / 1e18 ) #(1-1e-N) factor used to account for floating point errors. Should probably use fixed point maths here but shoudn't matter as account will still be pushed to liquidation by interest acccrual
         borrow_amount_underlying.append( borrow_amount_usd[i] / PriceOracle.getUnderlyingPrice(jToken_addresses[borrow_jTokens[i]]) )
     
     print( #Summarise calculations
         f"""
+        Lending Position Created:
         Account: {accounts[-1]}
         Supply amount usd: {supply_amount_usd/1e36}
         Borrow amount usd total: {sum(borrow_amount_usd)/1e36}
