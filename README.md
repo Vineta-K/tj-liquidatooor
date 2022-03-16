@@ -10,7 +10,7 @@ The aim is to create a bot/script + smart contract that does the following:
 - If underwater accounts are found attempt to liquidate them using flashloans to acquire the capital to repay the debt.
 ## Code:
 ### Install:
-#### @Brownie
+#### Brownie
 ##### Using  `pipx`:
 This uses brownie for development and testing,
 
