@@ -10,21 +10,28 @@ The aim is to create a bot + smart contract that does the following:
 - If underwater accounts are found attempt to liquidate them using flashloans to acquire the capital to repay the debt.
 ## Code:
 ### Install:
+#### @Brownie
+##### Using  `pipx`
 This uses brownie for development and testing,
 
-`pipx install brownie`
+`pipx install eth-brownie`
 
-`brownie networks import ./network-config.yaml`
+`brownie networks import ./network-config.yaml true`
 
-Web3py for the bot implementation,
+##### Using `venv`
+If `venv` is used the path `/venv/bin` (on ubuntu) or equivalent will need to be used before any brownie commands later in the readme.
 
-`pip install web3`
+`python3 -m venv .venv`
 
-And hardhat for forking avalanche mainnet.
+`pip install eth-brownie`
+
+`.venv/bin/brownie networks import ./network-config.yaml true`
+`
+#### Hardhat
+Hardhat is used for forking avalanche mainnet.
 
 `npm install --save-dev hardhat`
 
-You should probably use a `venv` but I forgot so my requirements are a bit messy.
 ### Bot:
 The bot is a Python script using web3.py libraries. An instance of the bot can be instantiated and run as follows. The executor account should be the owner of the liquidator smart contract.
 ```
