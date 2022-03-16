@@ -23,6 +23,8 @@ If `venv` is used the path `/venv/bin/` (on ubuntu) or equivalent will need to b
 
 `python3 -m venv .venv`
 
+`source .venv/bin/activate #Ubuntu/mac syntax`
+
 `pip install -r requirements.txt`
 
 `.venv/bin/brownie networks import ./network-config.yaml true`
