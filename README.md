@@ -5,7 +5,7 @@ This is my first proper solidity project and is shared here for educational/insp
 ## Specification:
 https://docs.google.com/document/d/1k8GusDAk-dLO8heNG-d4YJkmx8Z8vVMsIfS1R6QeMUE/
 
-The aim is to create a bot + smart contract that does the following:
+The aim is to create a bot/script + smart contract that does the following:
 - Monitor and identify underwater accounts in TraderJoe lending protocol.
 - If underwater accounts are found attempt to liquidate them using flashloans to acquire the capital to repay the debt.
 ## Code:
@@ -33,7 +33,7 @@ Hardhat is used for forking avalanche mainnet.
 `npm install --save-dev hardhat`
 
 ### Bot:
-The bot is a Python script using web3.py libraries. An instance of the bot can be instantiated and run as follows. The executor account should be the owner of the liquidator smart contract.
+The bot is a Python script using web3.py libraries. An instance of the bot can be instantiated and run as follows. The executor account should be the owner of the liquidator smart contract (if left blank it defaults to web3.eth.accounts[0] if possible).
 ```
 import LiquidatorBot
 liquidator_bot = LiquidatorBot(rpc_endpoint, executor_account, liquidator_contract_address)
@@ -42,14 +42,14 @@ liquidator_bot.run()
 The bot is structured such that it runs `mainloop()` forever until stopped or interrupted.
 This mainloop performs the following steps:
 - Query the Graph to find a list of underwater accounts.
-- Check the liquidity of these accounts with the Joetroller contract on chain to remove accounts where the Graph data is out of date
+- Check the liquidity of these accounts with the Joetroller contract to remove accounts where the Graph data is out of date
 - Work out which lending markets these accounts have postions in, by making calls to the jToken contracts.
 - Loop through the these account positions and:
     - Work out which collateral to seize, which borrow to repay, and how much to repay based on the accounts positions and protocol parameters.
     - Estimate the profit after gas of the liquidation.
     - If profitable, attempt the liquidation by calling a custom smart contract at liquidator_contract_address.
 ### Smart contract:
-The smart contract effectively implements a single main function which performs the liquidation using TraderJoe's flashloan implementation (from the jToken contracts). It requires the jToken addresses of the flash borrow token, repay token and collateral token. The flash borrow token must be different from the repay and collateral tokens to avoid re-entrancy in the jToken contracts.
+The smart contract effectively implements a single main function which performs the liquidation using TraderJoe's flashloan implementation. It requires the jToken addresses of the flash borrow token, repay token and collateral token. The flash borrow token must be different from the repay and collateral tokens to avoid re-entrancy in the jToken contracts.
 ```
 function liquidateWithFlashLoan(
     address flashLoanLender,
@@ -60,7 +60,7 @@ function liquidateWithFlashLoan(
 ) external
 ```
 This performs the following steps:
-- Borrows the required capital from the flashLoanLender to liquidate repayAmount of underlying borrow for the accountToLiquidate .
+- Borrows the required capital from the flashLoanLender to liquidate repayAmount of underlying borrow for the accountToLiquidate.
 - Swaps the flash loaned token to the underlying repay token (avoiding re-entrnacy when liquidating).
 - Liquidates the account be repaying repayAmount of the underlying debt, seizing collateralJToken.
 - Redeems the seized collateral jToken for its underlying.
@@ -72,7 +72,7 @@ There are also functions to allow the JoeRouter to be changed in case it is upgr
 ### Tests:
 There are two test files, one for testing the bot, and one for the smart contract. 
 It is recommended to run `brownie test -s` where `-s` gives text output during the test. The tests can take quite long (a few mins), especially those which create lending positions to test.
-#### Smart contract tests
+#### Smart contract tests:
 The smart contract tests are as follows:
 
 `test_set_joerouter()`- ensures joeRouter can be changed by the owner.
@@ -83,17 +83,19 @@ The smart contract tests are as follows:
 
 `test_liquidate()` - creates a lending position on chain that is in shortfall (by borrowing close to limit then accrueing interest over an artificially long time). Then liquidates this position using the `liquidateWithFlashLoan()` method, asserting that the previously underwater account is now no longer in shortfall after the liquidation.
 
-#### Bot tests
+#### Bot tests:
 At the moment there is only one test for the bot:
 
 `test_bot()` - creates an account with a lending position that is close to being underwater. It then runs a loop where the `mainloop()` of the bot is run, followed by the accrual of interest on the account's position. When the test sees an event corresponding to the liquidation of this position (when it is pushed underwater and the bot liquidates it), the loop is broken and the test passes.
 
-#### Network
+#### Network:
 Most of the development and testing was done on the `hardhat-dev` network (`brownie networks list` for details). However if you wan't call_trace debugging to have correct contract abis + function names it is recommended to manually start a local hardhat node and use `harhdhat-local` network.
 ## Todo/Further work:
 As always there is much more to do that could improve this project:
 - I didn't have time to do the extended parts of this bounty beyond the basics, so a telegram/discord bot hasn't been made.
-- The smart contract could do with more tests, and maybe some of the onFlashLoan function could be broken out into fucntions that couod be unit tested.
+- `Console.log()` needs removed before contract deployment.
+- The deploy script needs slight modification to deploy to mainnet from an actual avalanche c-chain account.
+- The smart contract could do with more unit tests. The `onlyOwner` modifier on the `withdarawToken()` function is not covered. Some of the `onFlashLoan()` function could be broken out into smaller fucntions that could be unit tested (swap, liquidate, redeem etc...).
 - The liquidation tests have a position where there are three different borrow tokens, but only one collateral token. A position where there are multiple collateral tokens as well should be made and the liquidation funtions tested on it. During `test_bot()` it does appear the bot occasionally liquidates some accounts like this from the Graph dataset but this is not repeatable.
 - The bot could do with unit tests of the logic that calculates the liquidation parameters.
 - The tests heavily use `Contract.from_explorer()` which is very slow. Contract abis should be locally downloaded and used.
