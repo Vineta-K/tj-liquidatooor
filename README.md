@@ -23,7 +23,7 @@ If `venv` is used the path `/venv/bin/` (on ubuntu) or equivalent will need to b
 
 `python3 -m venv .venv`
 
-`pip install eth-brownie`
+`pip install -r requirements.txt`
 
 `.venv/bin/brownie networks import ./network-config.yaml true`
 `
