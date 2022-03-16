@@ -19,7 +19,7 @@ This uses brownie for development and testing,
 `brownie networks import ./network-config.yaml true`
 
 ##### Using `venv`:
-If `venv` is used the path `/venv/bin/` (on ubuntu) or equivalent will need to be used before any brownie commands later in the readme.
+If `venv` is used the path `.venv/bin/` (on ubuntu) or equivalent will need to be used before any brownie commands later in the readme.
 
 `python3 -m venv .venv`
 
