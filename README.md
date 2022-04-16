@@ -34,6 +34,9 @@ Hardhat is used for forking avalanche mainnet.
 
 `npm install --save-dev hardhat`
 
+#### Secret keys/tokens
+The project requires an api key for downloading contract abis from snowtrace. A file called `secrets.py` containing `snowtrace_api_token = {your_snowtrace_api_token}` should be created in the bot directory.
+
 ### Bot:
 The bot is a Python script using web3.py libraries. An instance of the bot can be instantiated and run as follows. The executor account should be the owner of the liquidator smart contract (if left blank it defaults to web3.eth.accounts[0] if possible).
 ```
