@@ -35,7 +35,7 @@ class LiquidatorBot ():
   rpc_endpoint (str): endpoint to connect to w3
   * executor_account (str): account to call the liquidator contract from
   * liquidator_contract_address (str): address of liquidator contract.
-  If executor contract and liquidator contract address aren't given, the bot will still track underwater accounts bot not attempt to perform the liquidation
+  If executor contract and liquidator contract address aren't given, the bot will still track underwater accounts but not attempt to perform the liquidation
   """
   def __init__(self,rpc_endpoint = rpc_endpoint, executor_account = None, liquidator_contract_address=  None):
     #Connect to w3
@@ -86,9 +86,6 @@ class LiquidatorBot ():
     Queries graph api, works out liquidation parameters then calls liquidator smart contract
     """
     ##Fetch underwater accounts from the graph (kinda delayed, a bot to beat others probably needs to look at events and create own db of lending accounts!)
-    #if test_accts: #So we don't try and liq all the graph ones during tests
-    #  underwater_accs = []
-    #else:
     underwater_accs = run_graph_query(graphql_uri, liq_query)["data"]["accounts"]
 
     ##Double check graph data with on chain contracts  
@@ -97,9 +94,9 @@ class LiquidatorBot ():
       address = self.w3.toChecksumAddress(acc_data["id"].lower())
       error, liquidity, shortfall = self.Joetroller.functions.getAccountLiquidity(address).call() #Check liquidity of account
       if error != 0:
-        print(f"Error getting account liquidity for {address}")
+        printv(f"Error getting account liquidity for {address}",verbose)
       if liquidity != 0:
-        print(f"{address}: Liquidity:{liquidity/1e18} ")
+        printv(f"{address}: Liquidity:{liquidity/1e18} ",verbose)
       else:
         print(f"{address}: Shortfall: {shortfall/1e18}")
         checked_underwater_accounts.append(address) #Add account to new list if actually in shortfall
@@ -139,6 +136,7 @@ class LiquidatorBot ():
               seize_jToken
           )
         gas = self.try_tx(tx.estimateGas, {"from":self.executor_account})
+        print(f"Gas: {gas}")
         if not isinstance(gas,Exception): #If gas estimation didn't work, don't try actual tx
           gas_cost_usd = 1e-36 * gas * self.w3.eth.gas_price * self.PriceOracle.functions.getUnderlyingPrice(jToken_addresses['jAVAX']).call() #Probably a not ideal estimation
           profit = profit_before_gas - gas_cost_usd
@@ -164,7 +162,7 @@ class LiquidatorBot ():
         _abi = jWrappedNative_abi
       else:
         _abi = jERC20_abi
-      contract = self.w3.eth.contract(address = jToken, abi = _abi)
+      contract = self.w3.eth.contract(address = jToken, abi = _abi) #could move this out to be done in __init__
       symbol = list(jToken_addresses.keys())[list(jToken_addresses.values()).index(jToken)] # could change this to lookup from jToken addresses for speed - DONE!
       decimals = underlying_decimals[symbol]
 
